@@ -29,10 +29,13 @@
 #include <map>
 #include <vector>
 #include <sstream>
-#include <cstdlib>
 #include <algorithm>
+#include <cstdlib>
+#include <cassert>
 
 typedef unsigned int uint;
+typedef int Cost;
+typedef std::vector<std::vector<Cost> > CostMatrix;
 typedef std::string Id;
 typedef std::vector<int> Preferences;
 typedef std::pair<Id,Preferences> Entity;
@@ -72,9 +75,7 @@ Entity parseEntity(const std::string& csv){
   return result;
 }
 
-int main(int arg_num, char** args) {
-
-  // process command line arguments
+void process_args(int arg_num, char** args){
   for(int i = 1; i < arg_num; ++i){
     std::string arg = args[i];
     if(arg == "--help" || arg == "-h"){
@@ -94,11 +95,9 @@ int main(int arg_num, char** args) {
       std::exit(0);
     }
   }
+}
 
-  // process data from sidin into vectors
-  std::vector<Id> entity_ids;
-  std::vector<Preferences> entity_preferences;
-
+void parse_csv_data(std::vector<Id>& entity_ids, std::vector<Preferences>& entity_preferences){
   uint group_count = 0;
   uint line = 1;
   while(std::cin) {
@@ -119,29 +118,60 @@ int main(int arg_num, char** args) {
     }
     ++line;
   }
+}
 
+void print_data(const std::vector<Id>& entity_ids, const std::vector<Preferences>& entity_preferences, std::ostream& dst){
+  assert(entity_ids.size() == entity_preferences.size());
   for(uint i = 0;  i < entity_ids.size(); ++i){
-    std::cout << entity_ids[i] << ":\t";
+    dst << entity_ids[i] << ":\t";
     for (int j = 0; j < entity_preferences[i].size(); ++j){
-      std::cout << entity_preferences[i][j] << " ";
+      dst << entity_preferences[i][j] << " ";
     }
-    std::cout << std::endl;
+    dst << std::endl;
   }
+}
+
+void fill_cost_matrix(const std::vector<Id>& entity_ids, const std::vector<Preferences>& entity_preferences,
+                      uint group_count,
+                      CostMatrix& cost_matrix)
+{
+  uint group_size = entity_ids.size() / group_count;
+  if(entity_ids.size() % group_count) { ++group_size; } // rounding up
+  uint columns = entity_ids.size(); // true count of entities
+  uint rows = group_count * group_size;
+
+  cost_matrix.clear();
+  cost_matrix.reserve(columns);
+  // fill the first rows with preferences
+  for(uint row = 0; row < group_count; ++row){
+    cost_matrix.push_back(std::vector<Cost>(columns,0));
+    for(uint column = 0; column < entity_preferences.size(); ++column){
+      cost_matrix[row][column] = entity_preferences[column][row]; // transposing
+    }
+  }
+  // fill the other rows by copying the first ones.
+  for(uint row = group_count; row < rows; ++row){
+    cost_matrix.push_back(cost_matrix[row % group_count]);
+  }
+}
+
+int main(int arg_num, char** args) {
+
+  process_args(arg_num,args);
+
+  std::vector<Id> entity_ids;
+  std::vector<Preferences> entity_preferences;
+  parse_csv_data(entity_ids, entity_preferences);
+
+  print_data(entity_ids,entity_preferences,std::cout);
 
   // create cost matrix
-  uint group_size = (entity_ids.size() / group_count);
-  if(entity_ids.size() % group_count) ++group_size;
-  std::vector<std::vector<int> > matrix;
-  matrix.resize(entity_ids.size(),std::vector<int>(group_count*group_size,0));
-  for(uint i = 0; i < entity_ids.size(); ++i){
-    std::vector<int>& row = matrix[i];
-    for(uint j = 0; j < group_size; ++j){
-      std::copy(entity_preferences[i].begin(), entity_preferences[i].end(), row.begin()+(j*group_count));
-    }
-  }
+  CostMatrix cost_matrix;
+  uint group_count = entity_preferences.front().size(); // #groups == #group preferences
+  fill_cost_matrix(entity_ids,entity_preferences,group_count,cost_matrix);
 
   /* initialize the hungarian_problem using the cost matrix*/
-  Hungarian hungarian(matrix, matrix.size(),matrix.front().size(), HUNGARIAN_MODE_MINIMIZE_COST) ;
+  Hungarian hungarian(cost_matrix, cost_matrix.size(), cost_matrix.front().size(), HUNGARIAN_MODE_MINIMIZE_COST) ;
 
   /* some output */
   fprintf(stderr, "cost-matrix:");
