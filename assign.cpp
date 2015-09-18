@@ -25,13 +25,16 @@
 * DEALINGS IN THE SOFTWARE.                                          *
 *********************************************************************/
 
-#include "hungarian/hungarian.hpp"
 #include <map>
 #include <vector>
 #include <sstream>
 #include <algorithm>
 #include <cstdlib>
 #include <cassert>
+#include <iostream>
+#include "munkres.h"
+#include "matrix.h"
+
 
 typedef unsigned int uint;
 typedef int Cost;
@@ -131,28 +134,35 @@ void print_data(const std::vector<Id>& entity_ids, const std::vector<Preferences
   }
 }
 
-void fill_cost_matrix(const std::vector<Id>& entity_ids, const std::vector<Preferences>& entity_preferences,
-                      uint group_count,
-                      CostMatrix& cost_matrix)
+template<typename T>
+void print_matrix(const Matrix<T>& matrix, std::ostream& stream){
+  // Display solved matrix.
+  for ( int row = 0 ; row < matrix.rows() ; row++ ) {
+    for ( int col = 0 ; col < matrix.columns() ; col++ ) {
+      stream << matrix(row,col) << ",";
+    }
+    stream << "\n";
+  }
+  stream << std::endl;
+}
+
+Matrix<double> create_matrix(const std::vector<Id>& entity_ids, const std::vector<Preferences>& entity_preferences,
+                      uint group_count)
 {
   uint group_size = entity_ids.size() / group_count;
   if(entity_ids.size() % group_count) { ++group_size; } // rounding up
   uint columns = entity_ids.size(); // true count of entities
   uint rows = group_count * group_size;
 
-  cost_matrix.clear();
-  cost_matrix.reserve(columns);
-  // fill the first rows with preferences
-  for(uint row = 0; row < group_count; ++row){
-    cost_matrix.push_back(std::vector<Cost>(columns,0));
-    for(uint column = 0; column < entity_preferences.size(); ++column){
-      cost_matrix[row][column] = entity_preferences[column][row]; // transposing
+  Matrix<double> result(rows,columns);
+
+  for(uint row = 0; row < rows; ++row){
+    for(uint column = 0; column < columns; ++column){
+      uint looped_row = row % group_count;
+      result(row, column) = entity_preferences[column][looped_row]; // transposing
     }
   }
-  // fill the other rows by copying the first ones.
-  for(uint row = group_count; row < rows; ++row){
-    cost_matrix.push_back(cost_matrix[row % group_count]);
-  }
+  return result;
 }
 
 int main(int arg_num, char** args) {
@@ -162,28 +172,14 @@ int main(int arg_num, char** args) {
   std::vector<Id> entity_ids;
   std::vector<Preferences> entity_preferences;
   parse_csv_data(entity_ids, entity_preferences);
-
   print_data(entity_ids,entity_preferences,std::cout);
 
-  // create cost matrix
-  CostMatrix cost_matrix;
-  uint group_count = entity_preferences.front().size(); // #groups == #group preferences
-  fill_cost_matrix(entity_ids,entity_preferences,group_count,cost_matrix);
+  Matrix<double> cost_matrix = std::move(create_matrix(entity_ids,entity_preferences,entity_preferences.front().size()));
+  Matrix<double> solution = cost_matrix;
+  Munkres munkres;
+  munkres.solve(solution);
 
-  /* initialize the hungarian_problem using the cost matrix*/
-  Hungarian hungarian(cost_matrix, cost_matrix.size(), cost_matrix.front().size(), HUNGARIAN_MODE_MINIMIZE_COST) ;
-
-  /* some output */
-  fprintf(stderr, "cost-matrix:");
-  hungarian.print_cost();
-
-  /* solve the assignement problem */
-  hungarian.solve();
-
-  /* some output */
-  fprintf(stderr, "assignment:");
-  hungarian.print_assignment();
-
+  print_matrix<double>(solution,std::cerr);
 
   return 0;
 }
