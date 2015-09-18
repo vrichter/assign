@@ -35,6 +35,8 @@
 #include "munkres.h"
 #include "matrix.h"
 
+#define WARNING(TXT) { std::cout << "WARNING: " << TXT<< std::endl; }
+#define ERROR(ERRVAL,TXT) { std::cout << "ERROR: " << TXT << std::endl; exit(ERRVAL); }
 
 typedef unsigned int uint;
 typedef int Cost;
