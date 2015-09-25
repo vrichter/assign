@@ -40,8 +40,6 @@
 
 struct Participant {
   std::string id = "";
-  std::string first_name = "";
-  std::string last_name = "";
   std::vector<int> preferences;
 };
 
@@ -81,11 +79,9 @@ std::vector<T> parse_vector(const std::vector<std::string>& data, uint start_at=
 Participant parseParticipant(const std::string& csv){
   std::vector<std::string> vector = split(csv,',');
   Participant result;
-  if(vector.size() > 3){
-    result.first_name = parse<std::string>(vector[0]);
-    result.last_name = parse<std::string>(vector[1]);
-    result.id = parse<std::string>(vector[2]);
-    result.preferences = parse_vector<int>(vector,3);
+  if(vector.size() > 1){
+    result.id = parse<std::string>(vector[0]);
+    result.preferences = parse_vector<int>(vector,1);
   }
   return result;
 }
@@ -103,11 +99,11 @@ void process_args(int arg_num, char** args, ProgArgs& prog_args_dst){
                 << std::endl;
       std::exit(0);
     } else if (arg == "--example" || arg == "-e"){
-      std::cout << "Jack,Bauer,jack,1,5,6,2,3" << std::endl;
-      std::cout << "Jill,Bill,jill,6,2,4,6,2" << std::endl;
-      std::cout << "Paul,Walker,paul,3,3,5,2,1" << std::endl;
-      std::cout << "Will,Smith,will,2,9,7,4,3" << std::endl;
-      std::cout << "Jenn,When,jenn,5,6,3,7,1" << std::endl;
+      std::cout << "jack,1,5,6,2,3" << std::endl;
+      std::cout << "jill,6,2,4,6,2" << std::endl;
+      std::cout << "paul,3,3,5,2,1" << std::endl;
+      std::cout << "jill,2,9,7,4,3" << std::endl;
+      std::cout << "jenn,5,6,3,7,1" << std::endl;
       std::exit(0);
     }
   }
@@ -153,8 +149,6 @@ std::string to_string(std::vector<T> vector){
 void print_data(const std::vector<Participant>& participants, std::ostream& dst){
   for(auto participant : participants){
     dst << "Participant: " << participant.id << std::endl;
-    dst << "\tFirst name:  " << participant.first_name << std::endl;
-    dst << "\tLast name:   " << participant.first_name << std::endl;
     dst << "\tPreferences: " << to_string(participant.preferences) << "\n";
   }
 }
@@ -190,9 +184,7 @@ Matrix<double> create_matrix(std::vector<Participant>& participants, uint group_
 
 void print_assignments_csv(const std::vector<Participant>& participants, const std::vector<GroupId>& groups){
   for(uint i = 0; i < participants.size(); ++i){
-    std::cout << participants.at(i).first_name << ","
-              << participants.at(i).last_name << ","
-              << participants.at(i).id << "," << groups.at(i) << std::endl;
+    std::cout << participants.at(i).id << "," << groups.at(i) << std::endl;
   }
 }
 
@@ -200,8 +192,6 @@ void print_assignments_json(const std::vector<Participant>& participants, const 
   std::cout << "{\n    \"assignment\": [\n";
   for(uint i = 0; i < participants.size(); ++i){
     std::cout << "        {\n"
-              << "            \"first_name\": \"" << participants.at(i).first_name << "\",\n"
-              << "            \"last_name\":  \"" << participants.at(i).last_name  << "\",\n"
               << "            \"id\":         \"" << participants.at(i).id         << "\",\n"
               << "            \"group\":      " << groups.at(i) << "\n        }";
     if(i+1 < participants.size()){
@@ -257,7 +247,7 @@ int main(int arg_num, char** args) {
     ERROR(-1,"Assignment went wrong. The reason is probably bad programming.");
   }
 
-  print_assignments_json(participants,assignments);
+  print_assignments_csv(participants,assignments);
 
   return 0;
 }
