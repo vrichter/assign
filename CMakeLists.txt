@@ -54,7 +54,10 @@ add_subdirectory(munkres-cpp)
 include_directories(${PROJECT_SOURCE_DIR}/munkres-cpp/src/)
 
 
-add_executable("assign" "${PROJECT_SOURCE_DIR}/assign.cpp")
+add_executable("assign"
+  "${PROJECT_SOURCE_DIR}/assign.cpp"
+  "${PROJECT_SOURCE_DIR}/common.cpp"
+  )
 
 target_link_libraries("assign"
   munkres)
