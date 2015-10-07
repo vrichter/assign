@@ -54,7 +54,7 @@ void process_args(int arg_num, char** args, ProgArgs& prog_args_dst){
       std::cout << "jack,1,5,6,2,3" << std::endl;
       std::cout << "jill,6,2,4,6,2" << std::endl;
       std::cout << "paul,3,3,5,2,1" << std::endl;
-      std::cout << "jill,2,9,7,4,3" << std::endl;
+      std::cout << "mila,2,9,7,4,3" << std::endl;
       std::cout << "jenn,5,6,3,7,1" << std::endl;
       std::exit(0);
     }

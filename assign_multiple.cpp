@@ -56,7 +56,10 @@ void process_args(int arg_num, char** args, ProgArgs& prog_args_dst){
     std::string arg = args[i];
     if(arg == "--help" || arg == "-h"){
       std::cout << "This application uses preferences to sort participants into groups. Input data is read from stdin.\n"\
-                << "Usage: assign < preferences.csv\n\n"
+                << "  Using -m and -x participants can be added to up to two distinct sets of groups (e.g. semnar and\n"
+                << "  tutorial) with mutual exclusive combinations (e.g. when a seminar and tutorial are at the same\n"
+                << "  time).\n\n"
+                << "Usage: \n> assign_multiple [parameters] < preferences.csv\n\n"
                 << "Parameters:\n"
                 << "\t -h       | --help            \t print this message and leave.\n"
                 << "\t -e       | --example         \t print an example preferences document in the correct format and leave.\n"
@@ -65,14 +68,18 @@ void process_args(int arg_num, char** args, ProgArgs& prog_args_dst){
                 << "\t                              \t counting from 0.\n"
                 << "\t                              \t integers determining where to split the preferences.\n"
                 << "\t -x <arg> | --exclusive <arg> \t may be used in combination with -m to make assignments with mutualy \n"
-                << "\t                              \t exclusive groups.\n"
+                << "\t                              \t exclusive groups.\n\n"
+                << "Example: \n> assign_multiple -e | assign_multiple -m 3 -x '0-0,2-1'\n"
+                << "  Will assign jack, jill, paul, mila and jenn to 3 groups from the first three preferences and two\n"
+                << "  groups from the other two preferences while preventing them from being in group combinations 0-0\n"
+                << "  and 2-1 (if possible).\n"
                 << std::endl;
       std::exit(0);
     } else if (arg == "--example" || arg == "-e"){
       std::cout << "jack,1,5,6,2,3" << std::endl;
       std::cout << "jill,6,2,4,6,2" << std::endl;
       std::cout << "paul,3,3,5,2,1" << std::endl;
-      std::cout << "jill,2,9,7,4,3" << std::endl;
+      std::cout << "mila,2,9,7,4,3" << std::endl;
       std::cout << "jenn,5,6,3,7,1" << std::endl;
       std::exit(0);
     } else if (arg == "--multiple" || arg == "-m"){
