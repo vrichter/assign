@@ -68,3 +68,18 @@ install(TARGETS "assign"
         ARCHIVE DESTINATION lib/static
         PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE
  )
+
+add_executable("assign_multiple"
+  "${PROJECT_SOURCE_DIR}/assign_multiple.cpp"
+  "${PROJECT_SOURCE_DIR}/common.cpp"
+  )
+
+target_link_libraries("assign_multiple"
+  munkres)
+
+install(TARGETS "assign_multiple"
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib/static
+        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE
+ )
