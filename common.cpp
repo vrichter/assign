@@ -260,14 +260,16 @@ std::vector<Assignment::ParticipantAssignment> Assignment::solve() const {
   }
 }
 
-void assign::print_assignments_csv(const std::vector<Assignment::ParticipantAssignment>& assignments){
+void assign::print_assignments_csv(const std::vector<Assignment::ParticipantAssignment>& assignments, bool print_costs){
   for (auto participant : assignments){
     std::cout << participant.participant;
     for(auto group : participant.assigned_groups){
       std::cout << "," << group;
     }
-    for(auto cost : participant.costs){
-      std::cout << "," << cost;
+    if(print_costs){
+      for(auto cost : participant.costs){
+        std::cout << "," << cost;
+      }
     }
     std::cout << std::endl;
   }

@@ -47,7 +47,9 @@ void process_args(int arg_num, char** args, ProgArgs& prog_args_dst){
                 << "Usage: assign < preferences.csv\n\n"
                 << "Parameters:\n"
                 << "\t -h | --help \t\t print this message and leave.\n"
-                << "\t -e | --example \t\t print an example preferences document in the correct format and leave."
+                << "\t -e | --example \t\t print an example preferences document in the correct format and leave.\n"
+                << "\t -c       | --costs           \t print the calculated costs in addition to the assignment. costs are .\n"
+                << "\t                              \t appended after all assignments.\n"
                 << std::endl;
       std::exit(0);
     } else if (arg == "--example" || arg == "-e"){
@@ -57,6 +59,10 @@ void process_args(int arg_num, char** args, ProgArgs& prog_args_dst){
       std::cout << "mila,2,9,7,4,3" << std::endl;
       std::cout << "jenn,5,6,3,7,1" << std::endl;
       std::exit(0);
+    } else if (arg == "--costs" || arg == "-c"){
+      prog_args_dst["costs"] = "1";
+    } else {
+      ERROR(1,"Unknown command line parameter' " << arg);
     }
   }
 }
@@ -71,7 +77,7 @@ int main(int arg_num, char** args) {
   Assignment problem(participants);
   auto assignments = problem.solve();
 
-  print_assignments_csv(assignments);
+  print_assignments_csv(assignments,!prog_args["costs"].empty());
 
   return 0;
 }

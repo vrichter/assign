@@ -79,7 +79,7 @@ private:
 };
 
 std::vector<std::string> split(const std::string& data, char delimiter);
-void print_assignments_csv(const std::vector<Assignment::ParticipantAssignment>& assignments);
+void print_assignments_csv(const std::vector<Assignment::ParticipantAssignment>& assignments, bool print_costs);
 
 template<typename T>
 T parse(const std::string& data){

@@ -63,6 +63,8 @@ void process_args(int arg_num, char** args, ProgArgs& prog_args_dst){
                 << "Parameters:\n"
                 << "\t -h       | --help            \t print this message and leave.\n"
                 << "\t -e       | --example         \t print an example preferences document in the correct format and leave.\n"
+                << "\t -c       | --costs           \t print the calculated costs in addition to the assignment. costs are .\n"
+                << "\t                              \t appended after all assignments.\n"
                 << "\t -m <arg> | --multiple <arg>  \t Assign participants to multiple groups. Splits the assignment multiple \n"
                 << "\t                              \t independent assignment problems. <arg> before which preference to split.\n"
                 << "\t                              \t counting from 0.\n"
@@ -88,6 +90,8 @@ void process_args(int arg_num, char** args, ProgArgs& prog_args_dst){
     } else if (arg == "--exclusive" || arg == "-x"){
       std::string next = read_next(i, arg_num, args, arg);
       prog_args_dst["exclusive"] = next;
+    } else if (arg == "--costs" || arg == "-c"){
+      prog_args_dst["costs"] = "1";
     } else {
       ERROR(1,"Unknown command line parameter' " << arg);
     }
@@ -142,7 +146,7 @@ int main(int arg_num, char** args) {
   Assignment problem(participants,split,exclude);
   auto assignments = problem.solve();
 
-  print_assignments_csv(assignments);
+  print_assignments_csv(assignments,!prog_args["costs"].empty());
 
   return 0;
 }
